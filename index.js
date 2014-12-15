@@ -40,3 +40,5 @@ function readdirs(path, fn) {
   });
 
 }
+
+module.exports = {readdirs: readdirs};
