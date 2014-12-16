@@ -10,16 +10,17 @@ function readdirs(path, fn) {
 
     if (item) {
 
-      fs.stat(path + item, function(err, stats) {
+      fs.stat(item, function(err, stats) {
 
         if (stats.isDirectory()) {
-          readdirs(path + item + "/", function(files) {
-            results.push(files);
+          readdirs(item + "/", function(files) {
+            results.push(item.split('/').slice(1).join('/'));
+            files.forEach(function(file) { results.push(file) });
             series(paths.shift());
           });
         }
         else {
-          results.push(item);
+          results.push(item.split('/').slice(1).join('/'));
           series(paths.shift());
         }
 
@@ -33,10 +34,8 @@ function readdirs(path, fn) {
   }
 
   fs.readdir(path, function(err, files) {
-
-    paths = files;
+    paths = files.map(function(file) { return path + file });
     series(paths.shift());
-
   });
 
 }
