@@ -1,41 +1,41 @@
 
 var fs = require("fs");
 
-function readdirs(path, fn) {
+function walk(arr, fn) {
 
-  var paths = [];
   var results = [];
 
-  function series(item) {
+  (function next(item) {
 
-    if (item) {
+    if (!item) return fn(results);
 
-      fs.stat(item, function(err, stats) {
+    results.push(item.split('/').slice(1).join('/'));
 
-        if (stats.isDirectory()) {
-          readdirs(item + "/", function(files) {
-            results.push(item.split('/').slice(1).join('/'));
-            files.forEach(function(file) { results.push(file) });
-            series(paths.shift());
-          });
-        }
-        else {
-          results.push(item.split('/').slice(1).join('/'));
-          series(paths.shift());
-        }
+    fs.stat(item, function(err, stats) {
 
+      if (!stats.isDirectory()) return next(arr.shift());
+
+      readdirs(item + '/', function(content) {
+        content.forEach(function(c) { results.push(c) });
+        next(arr.shift());
       });
 
-    }
-    else {
-      fn(results);
-    }
+    });
 
-  }
+  })(arr.shift());
+
+}
+
+function readdirs(path, fn) {
 
   fs.readdir(path, function(err, files) {
-    paths = files.map(function(file) { return path + file });
-    series(paths.shift());
+
+    files = files.map(function(file) { return path + file });
+
+    walk(files, function(content) {
+      fn(content);
+    });
+
   });
 
 }
